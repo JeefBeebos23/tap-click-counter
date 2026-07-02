@@ -3,9 +3,15 @@
 
 #define ID_INCREMENT 1001
 #define ID_DECREMENT 1002
+#define ID_PIN 1003
+
+static const WCHAR PIN_GLYPH_OFF[] = { 0xE718, 0x0000 };
+static const WCHAR PIN_GLYPH_ON[]  = { 0xE840, 0x0000 };
 
 static HWND g_hStatic = NULL;
+static HWND g_hPin = NULL;
 static int g_counter = 0;
+static BOOL g_pinned = FALSE;
 
 static void UpdateCounterText(void) {
     char buf[16];
@@ -22,7 +28,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 
         g_hStatic = CreateWindowA("STATIC", "0",
             WS_CHILD | WS_VISIBLE | SS_CENTER,
-            0, 20, 300, 80, hwnd, NULL, NULL, NULL);
+            0, 50, 300, 80, hwnd, NULL, NULL, NULL);
         SendMessageA(g_hStatic, WM_SETFONT, (WPARAM)hFont, TRUE);
 
         CreateWindowA("BUTTON", "-",
@@ -32,6 +38,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         CreateWindowA("BUTTON", "+",
             WS_CHILD | WS_VISIBLE | WS_TABSTOP,
             160, 140, 100, 50, hwnd, (HMENU)ID_INCREMENT, NULL, NULL);
+
+        HFONT hPinFont = CreateFontW(20, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE,
+            DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+            DEFAULT_QUALITY, DEFAULT_PITCH | FF_DONTCARE, L"Segoe MDL2 Assets");
+
+        g_hPin = CreateWindowW(L"BUTTON", PIN_GLYPH_OFF,
+            WS_CHILD | WS_VISIBLE | WS_TABSTOP,
+            210, 10, 90, 30, hwnd, (HMENU)ID_PIN, NULL, NULL);
+        SendMessageW(g_hPin, WM_SETFONT, (WPARAM)hPinFont, TRUE);
 
         return 0;
     }
@@ -44,6 +59,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
         case ID_DECREMENT:
             if (g_counter > 0) g_counter--;
             UpdateCounterText();
+            break;
+        case ID_PIN:
+            g_pinned = !g_pinned;
+            SetWindowPos(hwnd, g_pinned ? HWND_TOPMOST : HWND_NOTOPMOST,
+                0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+            SetWindowTextW(g_hPin, g_pinned ? PIN_GLYPH_ON : PIN_GLYPH_OFF);
             break;
         }
         return 0;
