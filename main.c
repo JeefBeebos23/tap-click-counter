@@ -47,6 +47,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
             break;
         }
         return 0;
+    case WM_LBUTTONDOWN:
+        g_counter++;
+        UpdateCounterText();
+        return 0;
     case WM_DESTROY:
         PostQuitMessage(0);
         return 0;
